@@ -1,4 +1,3 @@
-const { createServer } = require('@vercel/node');
 const express = require('express');
 const { exec } = require('child_process');
 
@@ -22,4 +21,10 @@ app.get('/transcode', (req, res) => {
   });
 });
 
-module.exports = createServer(app)
+// Defina a porta que o servidor vai usar
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
+module.exports = app;
