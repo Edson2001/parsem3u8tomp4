@@ -11,8 +11,15 @@ app.get('/transcode', (req, res) => {
 
   console.log(`Transcoding URL: ${url}`);
 
-  const command = `ffmpeg -i "${url}" -c:v libx264 -preset fast -c:a aac -f mp4 -movflags frag_keyframe+empty_moov pipe:1`;
-  const ffmpeg = spawn('ffmpeg', ['-i', url, '-c:v', 'libx264', '-preset', 'fast', '-c:a', 'aac', '-f', 'mp4', '-movflags', 'frag_keyframe+empty_moov', 'pipe:1']);
+  const ffmpeg = spawn('ffmpeg', [
+    '-i', url,
+    '-c:v', 'libx264',
+    '-preset', 'fast',
+    '-c:a', 'aac',
+    '-f', 'mp4',
+    '-movflags', 'frag_keyframe+empty_moov',
+    'pipe:1'
+  ]);
 
   res.setHeader('Content-Type', 'video/mp4');
 
@@ -24,13 +31,17 @@ app.get('/transcode', (req, res) => {
 
   ffmpeg.on('error', (err) => {
     console.error('FFmpeg error: ', err);
-    res.status(500).send('Internal Server Error');
+    if (!res.headersSent) {
+      res.status(500).send('Internal Server Error');
+    }
   });
 
   ffmpeg.on('close', (code) => {
     if (code !== 0) {
       console.error(`FFmpeg process closed with code ${code}`);
-      res.status(500).send('Internal Server Error');
+      if (!res.headersSent) {
+        res.status(500).send('Internal Server Error');
+      }
     } else {
       console.log(`FFmpeg process closed successfully with code ${code}`);
     }

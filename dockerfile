@@ -1,11 +1,8 @@
-# Use uma imagem base Node.js com FFmpeg pré-instalado
-FROM jrottenberg/ffmpeg:4.3-ubuntu2004 AS ffmpeg
-
 # Use uma imagem base Node.js oficial
 FROM node:14
 
-# Copie o FFmpeg da imagem anterior
-COPY --from=ffmpeg / /
+# Instale o FFmpeg
+RUN apt-get update && apt-get install -y ffmpeg
 
 # Crie um diretório de trabalho
 WORKDIR /app
