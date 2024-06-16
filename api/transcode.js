@@ -1,4 +1,4 @@
-const express = require('express');
+/* const express = require('express');
 const { spawn } = require('child_process');
 
 const app = express();
@@ -55,3 +55,42 @@ app.listen(PORT, () => {
 });
 
 module.exports = app;
+ */
+
+const express = require('express');
+const ffmpeg = require('fluent-ffmpeg');
+const ffmpegPath = require('ffmpeg-static');
+const app = express();
+
+ffmpeg.setFfmpegPath(ffmpegPath);
+
+app.get('/transcode', (req, res) => {
+  const inputUrl = req.query.url;
+  
+  if (!inputUrl) {
+    return res.status(400).send('URL parameter is required');
+  }
+
+  res.contentType('mp4');
+  
+  const command = ffmpeg(inputUrl)
+    .outputOptions([
+      '-c:v libx264',
+      '-preset fast',
+      '-c:a aac',
+      '-f mp4',
+      '-movflags frag_keyframe+empty_moov'
+    ])
+    .on('error', (err) => {
+      console.error('FFmpeg error: ', err);
+      res.status(500).send('Error during transcoding');
+    })
+    .pipe(res, { end: true });
+
+  command.run();
+});
+
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
